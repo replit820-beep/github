@@ -38,8 +38,8 @@ function AuthCallbackPage() {
           }
         }
 
-        const { data, error } = await supabase.auth.getUser();
-        if (error || !data.user) throw error ?? new Error("Session was not created");
+        const { data, error } = await supabase.auth.getSession();
+        if (error || !data.session) throw error ?? new Error("Session was not created");
 
         window.history.replaceState({}, document.title, next);
         window.location.replace(next);
