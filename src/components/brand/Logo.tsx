@@ -1,10 +1,10 @@
-import markAsset from "@/assets/velqorfi-mark.png.asset.json";
-import darkLogoAsset from "@/assets/velqorfi-full.png.asset.json";
+import logoMark from "@/assets/velqorfi-mark.png";
+import logoFull from "@/assets/velqorfi-full.png";
 
 export function LogoMark({ size = 28, className }: { size?: number; className?: string }) {
   return (
     <img
-      src={markAsset.url}
+      src={logoMark}
       alt="Velqorfi"
       className={`object-contain ${className || ""}`}
       style={{ height: size, width: "auto" }}
@@ -15,7 +15,7 @@ export function LogoMark({ size = 28, className }: { size?: number; className?: 
 export function Logo({ size = 32 }: { size?: number }) {
   return (
     <img
-      src={darkLogoAsset.url}
+      src={logoFull}
       height={size}
       alt="Velqorfi"
       className="object-contain"
@@ -23,4 +23,3 @@ export function Logo({ size = 32 }: { size?: number }) {
     />
   );
 }
-
