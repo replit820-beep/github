@@ -16,7 +16,7 @@ type OrderLike = {
 };
 
 function from() {
-  return process.env["OTP_FROM_EMAIL"] || `${BRAND} <onboarding@resend.dev>`;
+  return process.env["OTP_FROM_EMAIL"] || `${BRAND} <noreply@velqorfi.com>`;
 }
 
 /** Sends an email through Resend. Throws when delivery is not configured. */
