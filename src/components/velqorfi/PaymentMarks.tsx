@@ -1,0 +1,13 @@
+import { Landmark } from "lucide-react";
+
+export function PaymentMarks() {
+  return (
+    <div className="flex h-6 items-center gap-3" aria-label="Supported payment methods">
+      <svg viewBox="0 0 48 16" className="h-4 w-12" aria-label="Visa"><path fill="#1434CB" d="M19.3 15.7h-4l2.5-15.4h4l-2.5 15.4ZM33.4.7A10 10 0 0 0 29.8 0c-4 0-6.8 2.1-6.8 5.2 0 2.3 2 3.5 3.5 4.2 1.6.8 2.1 1.3 2.1 2 0 1.1-1.3 1.6-2.5 1.6-1.7 0-2.6-.2-4-.9l-.5-.2-.6 3.5c1 .4 2.8.8 4.7.8 4.2 0 7-2.1 7-5.4 0-1.8-1.1-3.2-3.4-4.3-1.4-.7-2.3-1.2-2.3-2 0-.7.7-1.4 2.4-1.4 1.4 0 2.4.3 3.2.6l.4.2.5-3.2ZM43.7.3h-3.1c-1 0-1.7.3-2.1 1.3l-6 14.1h4.2l.8-2.3h5.2l.5 2.3H47L43.7.3Zm-5 10 2.1-5.7.3-.9.3 1.1 1.2 5.5h-4ZM12 .3 8.1 10.8 7.7 8.7C7 6.3 4.8 3.7 2.4 2.4L6 15.7h4.3L16.6.3H12Z"/></svg>
+      <span className="relative h-5 w-8" aria-label="Mastercard"><span className="absolute left-0 h-5 w-5 rounded-full bg-mastercard-red"/><span className="absolute right-0 h-5 w-5 rounded-full bg-mastercard-gold opacity-90"/></span>
+      <svg viewBox="0 0 47 19" className="h-[19px] w-[47px] text-ink" aria-label="Apple Pay"><path fill="currentColor" d="M8.1 4.1c.8-1 1.3-2.3 1.2-3.6-1.2.1-2.6.8-3.4 1.7-.8.9-1.4 2.2-1.2 3.5 1.3.1 2.6-.6 3.4-1.6ZM10.8 10.1c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.9-3.5.9-.7 0-1.8-.9-3-.9C1.4 4.8 0 5.7-.8 7.1c-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3.1 2.4 1.2-.1 1.7-.8 3.2-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-3.4-1.3-3.4-4Z" transform="translate(1 -1) scale(.8)"/><text x="17" y="15" fill="currentColor" fontSize="14" fontFamily="Arial" fontWeight="600">Pay</text></svg>
+      <svg viewBox="0 0 48 22" className="h-[22px] w-12" aria-label="Google Pay"><rect x=".5" y=".5" width="47" height="21" rx="10.5" fill="white" stroke="#DADCE0"/><path d="M13.2 11.1c0-.5 0-.9-.1-1.3H7.7v2.1h3.1a2.6 2.6 0 0 1-1.2 1.7v1.4h1.8c1.1-1 1.8-2.4 1.8-3.9Z" fill="#4285F4"/><path d="M7.7 16.7c1.5 0 2.8-.5 3.7-1.4l-1.8-1.4c-.5.3-1.1.5-1.9.5-1.5 0-2.7-1-3.1-2.3H2.7v1.4c.9 1.9 2.8 3.2 5 3.2Z" fill="#34A853"/><path d="M4.6 12.1a3.7 3.7 0 0 1 0-2.3V8.4H2.7a5.7 5.7 0 0 0 0 5.1l1.9-1.4Z" fill="#FBBC05"/><path d="M7.7 7.5c.8 0 1.6.3 2.1.8l1.6-1.6a5.3 5.3 0 0 0-8.7 1.7l1.9 1.4c.4-1.3 1.6-2.3 3.1-2.3Z" fill="#EA4335"/><text x="16" y="15" fill="#3C4043" fontSize="10" fontFamily="Arial">Pay</text></svg>
+      <Landmark className="h-5 w-5 text-ink" aria-label="Bank transfer" />
+    </div>
+  );
+}

@@ -1,0 +1,374 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.129 0.042 264.695);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.129 0.042 264.695);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.129 0.042 264.695);
+  --primary: oklch(0.208 0.042 265.755);
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.968 0.007 247.896);
+  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --muted: oklch(0.968 0.007 247.896);
+  --muted-foreground: oklch(0.554 0.046 257.417);
+  --accent: oklch(0.968 0.007 247.896);
+  --accent-foreground: oklch(0.208 0.042 265.755);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.929 0.013 255.508);
+  --input: oklch(0.929 0.013 255.508);
+  --ring: oklch(0.704 0.04 256.788);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.984 0.003 247.858);
+  --sidebar-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-primary: oklch(0.208 0.042 265.755);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.968 0.007 247.896);
+  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
+  --sidebar-border: oklch(0.929 0.013 255.508);
+  --sidebar-ring: oklch(0.704 0.04 256.788);
+}
+
+.dark {
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.208 0.042 265.755);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.929 0.013 255.508);
+  --primary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.551 0.027 264.364);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.208 0.042 265.755);
+  --sidebar-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.279 0.041 260.031);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.551 0.027 264.364);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
+
+/* ---------- Velqorfi brand tokens (Cloud White system) ---------- */
+:root {
+  --brand: oklch(0.623 0.214 259);
+  --brand-foreground: oklch(0.99 0 0);
+  --brand-blue: oklch(0.55 0.2 258);
+  --brand-violet: oklch(0.5 0.16 268);
+  --brand-cyan: oklch(0.72 0.13 235);
+  --brand-mint: oklch(0.78 0.12 190);
+  --brand-lime: oklch(0.8 0.13 165);
+  --surface-soft: oklch(0.965 0.006 250);
+  --ink: oklch(0.208 0.042 265);
+  --ink-soft: oklch(0.55 0.03 257);
+  --success: oklch(0.6 0.14 155);
+  --danger: oklch(0.58 0.2 20);
+
+  /* app (ramp) surfaces */
+  --ramp-primary: oklch(0.623 0.214 259);
+  --ramp-primary-soft: oklch(0.965 0.018 255);
+  --ramp-line: oklch(0.925 0.008 250);
+  --ramp-canvas: oklch(0.986 0.002 247);
+
+  /* checkout surfaces */
+  --pay-background: oklch(0.986 0.002 247);
+  --pay-surface: oklch(0.965 0.006 250);
+  --pay-primary: oklch(0.623 0.214 259);
+  --pay-foreground: oklch(0.208 0.042 265);
+  --pay-card: oklch(1 0 0);
+  --pay-line: oklch(0.925 0.008 250);
+
+
+  --notice: oklch(0.975 0.012 250);
+  --notice-foreground: oklch(0.5 0.03 257);
+  --logo-blue: oklch(0.6 0.19 258);
+  --logo-red: oklch(0.58 0.2 25);
+  --logo-yellow: oklch(0.82 0.15 92);
+  --logo-teal: oklch(0.68 0.12 190);
+  --logo-orange: oklch(0.7 0.16 55);
+  --logo-green: oklch(0.63 0.15 155);
+  --logo-violet: oklch(0.55 0.17 285);
+  --mastercard-red: oklch(0.59 0.25 25);
+  --mastercard-gold: oklch(0.76 0.18 67);
+
+  --gradient-hero: linear-gradient(
+    180deg,
+    oklch(0.986 0.002 247) 0%,
+    oklch(0.958 0.012 250) 100%
+  );
+  --gradient-cta: linear-gradient(
+    100deg,
+    oklch(0.24 0.05 264) 0%,
+    oklch(0.3 0.08 262) 55%,
+    oklch(0.4 0.14 258) 100%
+  );
+  --gradient-buy: linear-gradient(
+    100deg,
+    oklch(0.623 0.214 259) 0%,
+    oklch(0.56 0.19 265) 100%
+  );
+  --shadow-card: 0 1px 2px oklch(0.208 0.042 265 / 0.06),
+    0 12px 32px -16px oklch(0.208 0.042 265 / 0.18);
+  --shadow-lift: 0 24px 60px -32px oklch(0.208 0.042 265 / 0.35);
+}
+
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-violet: var(--brand-violet);
+  --color-brand-cyan: var(--brand-cyan);
+  --color-brand-mint: var(--brand-mint);
+  --color-brand-lime: var(--brand-lime);
+  --color-surface-soft: var(--surface-soft);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-ramp-primary: var(--ramp-primary);
+  --color-ramp-primary-soft: var(--ramp-primary-soft);
+  --color-ramp-line: var(--ramp-line);
+  --color-ramp-canvas: var(--ramp-canvas);
+  --color-pay-background: var(--pay-background);
+  --color-pay-surface: var(--pay-surface);
+  --color-pay-primary: var(--pay-primary);
+  --color-pay-foreground: var(--pay-foreground);
+  --color-pay-card: var(--pay-card);
+  --color-pay-line: var(--pay-line);
+  --color-notice: var(--notice);
+  --color-notice-foreground: var(--notice-foreground);
+  --color-logo-blue: var(--logo-blue);
+  --color-logo-red: var(--logo-red);
+  --color-logo-yellow: var(--logo-yellow);
+  --color-logo-teal: var(--logo-teal);
+  --color-logo-orange: var(--logo-orange);
+  --color-logo-green: var(--logo-green);
+  --color-logo-violet: var(--logo-violet);
+  --color-mastercard-red: var(--mastercard-red);
+  --color-mastercard-gold: var(--mastercard-gold);
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", sans-serif;
+  --font-payment: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* checkout skin A (blue) */
+  --color-ckb-blue: var(--ckb-blue);
+  --color-ckb-ink: var(--ckb-ink);
+  --color-ckb-muted: var(--ckb-muted);
+  --color-ckb-strike: var(--ckb-strike);
+  --color-ckb-timer: var(--ckb-timer);
+  --color-ckb-line: var(--ckb-line);
+  --color-ckb-ghost: var(--ckb-ghost);
+
+  /* checkout skin B (teal) */
+  --color-ckt-teal: var(--ckt-teal);
+  --color-ckt-ink: var(--ckt-ink);
+  --color-ckt-muted: var(--ckt-muted);
+  --color-ckt-line: var(--ckt-line);
+  --color-ckt-field: var(--ckt-field);
+}
+
+:root {
+  /* checkout skin A (blue) */
+  --ckb-blue: oklch(0.664 0.156 262);
+  --ckb-ink: oklch(0.22 0 0);
+  --ckb-muted: oklch(0.35 0 0);
+  --ckb-strike: oklch(0.6 0 0);
+  --ckb-timer: oklch(0.55 0.21 27);
+  --ckb-line: oklch(0.88 0 0);
+  --ckb-ghost: oklch(0.72 0 0);
+
+  /* checkout skin B (teal) */
+  --ckt-teal: oklch(0.74 0.128 179);
+  --ckt-ink: oklch(0.34 0.02 235);
+  --ckt-muted: oklch(0.46 0.02 235);
+  --ckt-line: oklch(0.92 0.005 240);
+  --ckt-field: oklch(0.975 0.003 240);
+}
+
+
+@utility bg-hero-gradient {
+  background-image: var(--gradient-hero);
+}
+
+@utility bg-cta-gradient {
+  background-image: var(--gradient-cta);
+}
+
+@utility bg-buy-gradient {
+  background-image: var(--gradient-buy);
+}
+
+@utility bg-brand-gradient {
+  background-image: linear-gradient(
+    135deg,
+    var(--brand),
+    var(--brand-violet)
+  );
+}
+
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+@utility shadow-lift {
+  box-shadow: var(--shadow-lift);
+}
+
+@utility grid-backdrop {
+  background-image:
+    linear-gradient(to right, oklch(0.208 0.042 265 / 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.208 0.042 265 / 0.055) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.022em;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  button, a, input {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:active, a:active {
+    transform: scale(0.985);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@keyframes velqorfi-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes velqorfi-sheet {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes velqorfi-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.payment-marquee { animation: velqorfi-marquee 25s linear infinite; }
+.logo-hex { clip-path: polygon(25% 7%,75% 7%,100% 50%,75% 93%,25% 93%,0 50%); }
+
+@utility animate-rise {
+  animation: velqorfi-rise 520ms cubic-bezier(.16,.84,.24,1) both;
+}
+
+@utility animate-sheet-up {
+  animation: velqorfi-sheet 300ms cubic-bezier(.2,.8,.2,1) both;
+}
+
