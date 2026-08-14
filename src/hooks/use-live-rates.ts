@@ -13,8 +13,10 @@ export function useLiveRates() {
   const { data } = useQuery({
     queryKey: ["live-rates"],
     queryFn: () => fetchRates(),
-    refetchInterval: 60_000,
-    staleTime: 45_000,
+    refetchInterval: 20_000,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
   const cryptos = useMemo<Crypto[]>(
