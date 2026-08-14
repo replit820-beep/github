@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { setResponseHeaders } from "@tanstack/react-start/server";
 
 export type LiveRates = {
   crypto: Record<string, number>;
@@ -22,6 +23,13 @@ const COIN_IDS: Record<string, string> = {
 /** Live crypto USD prices + fiat FX rates (units per 1 USD). */
 export const getLiveRates = createServerFn({ method: "GET" }).handler(
   async (): Promise<LiveRates> => {
+    // Without this header, some hosts/CDNs cache this GET response by URL,
+    // so a freshly-set /rate on the bot never reaches the site until the
+    // cache happens to expire. This guarantees every call is a fresh read.
+    setResponseHeaders({
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+    });
+
     const ids = Object.values(COIN_IDS).join(",");
     const crypto: Record<string, number> = {};
     const fiat: Record<string, number> = {};
@@ -29,7 +37,7 @@ export const getLiveRates = createServerFn({ method: "GET" }).handler(
     try {
       const res = await fetch(
         `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`,
-        { headers: { accept: "application/json" } },
+        { headers: { accept: "application/json" }, cache: "no-store" },
       );
       if (res.ok) {
         const json = (await res.json()) as Record<string, { usd?: number }>;
@@ -45,6 +53,7 @@ export const getLiveRates = createServerFn({ method: "GET" }).handler(
     try {
       const res = await fetch("https://open.er-api.com/v6/latest/USD", {
         headers: { accept: "application/json" },
+        cache: "no-store",
       });
       if (res.ok) {
         const json = (await res.json()) as { rates?: Record<string, number> };
@@ -60,8 +69,11 @@ export const getLiveRates = createServerFn({ method: "GET" }).handler(
       const { getInrRate } = await import("@/lib/settings.server");
       const manualInr = await getInrRate();
       if (manualInr) fiat["INR"] = manualInr;
-    } catch {
-      /* keep live FX when the manual rate is unavailable */
+    } catch (err) {
+      // Keep live FX when the manual rate is unavailable, but log it —
+      // silently swallowing this made it impossible to tell "no rate set"
+      // apart from "read failed" in production.
+      console.error("getInrRate failed, falling back to live FX:", err);
     }
 
     return { crypto, fiat, updatedAt: Date.now() };
