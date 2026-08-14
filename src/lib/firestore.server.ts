@@ -191,6 +191,7 @@ export async function listDocuments(
     if (pageToken) query.set("pageToken", pageToken);
     const res = await fetch(`${base()}/${collection}?${query}`, {
       headers: { authorization: `Bearer ${token}` },
+      cache: "no-store",
     });
     if (res.status === 404) return [];
     if (!res.ok) {
@@ -210,6 +211,11 @@ export async function getDocument(collection: string, id: string) {
   const token = await accessToken();
   const res = await fetch(`${base()}/${collection}/${encodeURIComponent(id)}`, {
     headers: { authorization: `Bearer ${token}` },
+    // Force a fresh read every time — without this, some hosting/edge
+    // runtimes silently cache identical GET requests (same URL every call),
+    // which is exactly why a value like the manual INR rate can look
+    // "stuck" on the live site even though it was written correctly.
+    cache: "no-store",
   });
   if (!res.ok) return null;
   return fromDoc((await res.json()) as never);
