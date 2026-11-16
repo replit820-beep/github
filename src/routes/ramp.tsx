@@ -175,6 +175,8 @@ function Ramp() {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [kycOpen, setKycOpen] = useState(false);
   const [kycDone, setKycDone] = useState(false);
+  const [kycChecking, setKycChecking] = useState(false);
+  const [kycError, setKycError] = useState("");
   const [orderError, setOrderError] = useState("");
   const [quoteSec, setQuoteSec] = useState(15);
 
@@ -370,17 +372,46 @@ function Ramp() {
             </div>
           </div>
 
+          {kycError && (
+            <p className="mt-4 text-center text-[12px] text-danger">{kycError}</p>
+          )}
           <button
-            onClick={() => {
+            disabled={kycChecking}
+            onClick={async () => {
+              if (kycChecking) return;
               if (!authLoading && !user) {
                 navigate({ to: "/login", search: { redirect: "/ramp" } });
                 return;
               }
+              if (!user) return;
+              setKycError("");
+              if (!kycDone) {
+                setKycChecking(true);
+                try {
+                  const idToken = await user.getIdToken();
+                  const k = await getKycStatus({ data: { idToken } });
+                  if (k.status !== "verified") {
+                    setKycOpen(true);
+                    return;
+                  }
+                  setKycDone(true);
+                } catch (error) {
+                  setKycError(
+                    error instanceof Error
+                      ? error.message
+                      : "Could not check KYC. Please try again.",
+                  );
+                  return;
+                } finally {
+                  setKycChecking(false);
+                }
+              }
               setStep("wallet");
             }}
-            className="mt-6 flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-buy-gradient py-4 text-[14px] font-semibold text-brand-foreground shadow-card transition-opacity hover:opacity-90"
+            className="mt-6 flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-buy-gradient py-4 text-[14px] font-semibold text-brand-foreground shadow-card transition-opacity hover:opacity-90 disabled:opacity-60"
           >
-            Proceed <ArrowRight className="h-4 w-4" />
+            {kycChecking ? "Checking KYC…" : "Proceed"}
+            {!kycChecking && <ArrowRight className="h-4 w-4" />}
           </button>
         </div>
       )}
@@ -682,7 +713,11 @@ function Ramp() {
           onDone={() => {
             setKycOpen(false);
             setKycDone(true);
-            setOrderError("KYC verified ✓ Tap Proceed to payment again.");
+            if (step === "quote") {
+              setStep("wallet");
+            } else {
+              setOrderError("KYC verified ✓ Tap Proceed to payment again.");
+            }
           }}
         />
       )}
