@@ -5,6 +5,9 @@ export type LiveRates = {
   crypto: Record<string, number>;
   fiat: Record<string, number>;
   updatedAt: number;
+  /** "manual" = /rate from Telegram bot, "live" = market FX, "none" = nothing found */
+  inrSource: "manual" | "live" | "none";
+  manualInr: number | null;
 };
 
 const COIN_IDS: Record<string, string> = {
@@ -20,62 +23,88 @@ const COIN_IDS: Record<string, string> = {
   GRAM: "gram-2",
 };
 
-/** Live crypto USD prices + fiat FX rates (units per 1 USD). */
-export const getLiveRates = createServerFn({ method: "GET" }).handler(
+// Stablecoins are always exactly 1 USD, so with a manual rate of 115
+// 1 USDT / 1 USDC = exactly ₹115 (not ₹114.98 from a 0.9998 market quote).
+const STABLES = ["USDT", "USDC"];
+
+/** fetch JSON with a hard timeout so a slow third-party API can never hang the whole response. */
+async function fetchJson<T>(url: string, ms = 3000): Promise<T | null> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(url, {
+      headers: { accept: "application/json" },
+      cache: "no-store",
+      signal: ctrl.signal,
+    });
+    return res.ok ? ((await res.json()) as T) : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function readManualInr(): Promise<number | null> {
+  try {
+    const { getInrRate } = await import("@/lib/settings.server");
+    return await getInrRate();
+  } catch (err) {
+    console.error("getInrRate failed, falling back to live FX:", err);
+    return null;
+  }
+}
+
+/**
+ * Live crypto USD prices + fiat FX rates (units per 1 USD).
+ *
+ * Rate logic:
+ *  - Bot `/rate 115` sets manual INR rate = 115  -> 1 USDT/USDC = ₹115,
+ *    every other coin = live USD price × 115.
+ *  - `/rate 120` -> everything uses 120, `/rate 110` -> everything uses 110.
+ *  - No manual rate set -> live market FX is used.
+ *
+ * POST (not GET) so no browser / CDN / edge cache can ever serve a stale rate.
+ */
+export const getLiveRates = createServerFn({ method: "POST" }).handler(
   async (): Promise<LiveRates> => {
-    // Without this header, some hosts/CDNs cache this GET response by URL,
-    // so a freshly-set /rate on the bot never reaches the site until the
-    // cache happens to expire. This guarantees every call is a fresh read.
     setResponseHeaders({
       "Cache-Control": "no-store, no-cache, must-revalidate",
     });
 
     const ids = Object.values(COIN_IDS).join(",");
-    const crypto: Record<string, number> = {};
-    const fiat: Record<string, number> = {};
 
-    try {
-      const res = await fetch(
+    // All three run in parallel; each one fails on its own without affecting the others.
+    const [manualInr, cg, fx] = await Promise.all([
+      readManualInr(),
+      fetchJson<Record<string, { usd?: number }>>(
         `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`,
-        { headers: { accept: "application/json" }, cache: "no-store" },
-      );
-      if (res.ok) {
-        const json = (await res.json()) as Record<string, { usd?: number }>;
-        for (const [symbol, id] of Object.entries(COIN_IDS)) {
-          const usd = json[id]?.usd;
-          if (typeof usd === "number") crypto[symbol] = usd;
-        }
-      }
-    } catch {
-      /* fall back to static prices on the client */
+      ),
+      fetchJson<{ rates?: Record<string, number> }>(
+        "https://open.er-api.com/v6/latest/USD",
+      ),
+    ]);
+
+    const crypto: Record<string, number> = {};
+    for (const [symbol, id] of Object.entries(COIN_IDS)) {
+      const usd = cg?.[id]?.usd;
+      if (typeof usd === "number") crypto[symbol] = usd;
+    }
+    for (const s of STABLES) crypto[s] = 1;
+
+    const fiat: Record<string, number> = {};
+    for (const [code, rate] of Object.entries(fx?.rates ?? {})) {
+      if (typeof rate === "number") fiat[code] = rate;
     }
 
-    try {
-      const res = await fetch("https://open.er-api.com/v6/latest/USD", {
-        headers: { accept: "application/json" },
-        cache: "no-store",
-      });
-      if (res.ok) {
-        const json = (await res.json()) as { rates?: Record<string, number> };
-        for (const [code, rate] of Object.entries(json.rates ?? {})) {
-          if (typeof rate === "number") fiat[code] = rate;
-        }
-      }
-    } catch {
-      /* fall back to static rates on the client */
+    let inrSource: LiveRates["inrSource"] = "none";
+    if (manualInr) {
+      fiat["INR"] = manualInr;
+      inrSource = "manual";
+    } else if (typeof fiat["INR"] === "number") {
+      inrSource = "live";
     }
 
-    try {
-      const { getInrRate } = await import("@/lib/settings.server");
-      const manualInr = await getInrRate();
-      if (manualInr) fiat["INR"] = manualInr;
-    } catch (err) {
-      // Keep live FX when the manual rate is unavailable, but log it —
-      // silently swallowing this made it impossible to tell "no rate set"
-      // apart from "read failed" in production.
-      console.error("getInrRate failed, falling back to live FX:", err);
-    }
-
-    return { crypto, fiat, updatedAt: Date.now() };
+    return { crypto, fiat, updatedAt: Date.now(), inrSource, manualInr };
   },
 );
