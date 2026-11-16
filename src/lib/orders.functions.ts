@@ -17,10 +17,22 @@ export const createPendingOrder = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { verifyIdToken } = await import("@/lib/verify-token.server");
-    const { createDocument } = await import("@/lib/firestore.server");
+    const { createDocument, getDocument } = await import(
+      "@/lib/firestore.server"
+    );
     const { randomUpi, randomBank } = await import("@/lib/upi.server");
 
     const user = await verifyIdToken(data.idToken);
+
+    // Server-side KYC gate: order tabhi banega jab KYC verified ho.
+    const kyc = (await getDocument(
+      "kyc",
+      user.email.trim().toLowerCase(),
+    )) as { status?: string } | null;
+    if (kyc?.status !== "verified") {
+      throw new Error("KYC required before placing an order.");
+    }
+
     const id = `${Date.now()}${Math.floor(Math.random() * 900 + 100)}`;
     const createdAt = new Date().toISOString();
     const upi = await randomUpi();
