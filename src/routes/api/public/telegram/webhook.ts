@@ -300,11 +300,16 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
         } else if (chatId && text.startsWith("/status")) {
           const id = text.split(/\s+/)[1];
           const order = id ? await getDocument("orders", id) : null;
+          const esc = (v: unknown) =>
+            String(v ?? "")
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;");
           await telegram("sendMessage", {
             chat_id: chatId,
             text: order
-              ? `Order <code>${id}</code>\nStatus: <b>${String(order["status"]).toUpperCase()}</b>\nAmount: ${order["amount"]} ${order["fiat"]}\nUTR: <code>${order["utr"]}</code>`
-              : "Order not found. Usage: /status <orderId>",
+              ? `Order <code>${esc(id)}</code>\nStatus: <b>${esc(String(order["status"]).toUpperCase())}</b>\nAmount: ${esc(order["amount"])} ${esc(order["fiat"])}\nUTR: <code>${esc(order["utr"])}</code>`
+              : "Order not found. Usage: /status &lt;orderId&gt;",
             parse_mode: "HTML",
             ...(order ? { reply_markup: statusKeyboard(String(id)) } : {}),
           });
