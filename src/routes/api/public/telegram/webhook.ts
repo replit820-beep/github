@@ -290,9 +290,14 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
               });
             } else {
               const rate = await setInrRate(value);
+              // Read it back exactly like the website does, to prove it really saved.
+              const saved = await getInrRate();
               await telegram("sendMessage", {
                 chat_id: chatId,
-                text: `Rate updated \u2705\n1 USDT = <b>\u20b9${rate}</b>\nAll coins are now priced at their live USD price \u00d7 ${rate}.`,
+                text:
+                  saved === rate
+                    ? `Rate updated \u2705\n1 USDT = 1 USDC = <b>\u20b9${rate}</b>\nAll other coins = live USD price \u00d7 ${rate}.\nWebsite pe 20 sec ke andar dikhega (page refresh karo).`
+                    : `\u26a0\ufe0f Rate save hua par read-back match nahi hua.\nSaved: ${saved ?? "none"} | Expected: ${rate}\nFirebase env / Firestore permission check karo.`,
                 parse_mode: "HTML",
               });
             }
