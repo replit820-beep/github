@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { setResponseHeaders } from "@tanstack/react-start/server";
+import { setResponseHeader } from "@tanstack/react-start/server";
 
 export type LiveRates = {
   crypto: Record<string, number>;
@@ -68,9 +68,16 @@ async function readManualInr(): Promise<number | null> {
  */
 export const getLiveRates = createServerFn({ method: "POST" }).handler(
   async (): Promise<LiveRates> => {
-    setResponseHeaders({
-      "Cache-Control": "no-store, no-cache, must-revalidate",
-    });
+    // NOTE: setResponseHeaders({...}) needs a Headers object in this TanStack
+    // version and throws "headers is not iterable" with a plain object, which
+    // made this whole function crash and the site fall back to the hardcoded
+    // 83.40 INR rate. Use the single-header setter, and never let a header
+    // problem break the rate response.
+    try {
+      setResponseHeader("Cache-Control", "no-store");
+    } catch {
+      /* non-fatal */
+    }
 
     const ids = Object.values(COIN_IDS).join(",");
 
