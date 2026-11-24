@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { limitError } from "@/lib/limits";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -175,6 +176,7 @@ function Ramp() {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [kycOpen, setKycOpen] = useState(false);
   const [kycDone, setKycDone] = useState(false);
+  const [limitMsg, setLimitMsg] = useState("");
   const [kycChecking, setKycChecking] = useState(false);
   const [kycError, setKycError] = useState("");
   const [orderError, setOrderError] = useState("");
@@ -379,6 +381,17 @@ function Ramp() {
             disabled={kycChecking}
             onClick={async () => {
               if (kycChecking) return;
+              if (tab === "buy") {
+                const msg = limitError(
+                  Number(amount) || 0,
+                  fiat,
+                  fiats.find((f) => f.code === "INR"),
+                );
+                if (msg) {
+                  setLimitMsg(msg);
+                  return;
+                }
+              }
               if (!authLoading && !user) {
                 navigate({ to: "/login", search: { redirect: "/ramp" } });
                 return;
@@ -644,6 +657,17 @@ function Ramp() {
             disabled={placingOrder}
             onClick={async () => {
               if (placingOrder) return;
+              {
+                const msg = limitError(
+                  Number(amount) || 0,
+                  fiat,
+                  fiats.find((f) => f.code === "INR"),
+                );
+                if (msg) {
+                  setLimitMsg(msg);
+                  return;
+                }
+              }
               if (!user) {
                 navigate({ to: "/login", search: { redirect: "/ramp" } });
                 return;
@@ -722,6 +746,9 @@ function Ramp() {
         />
       )}
       {menuOpen && <RampMenu onClose={() => setMenuOpen(false)} />}
+      {limitMsg && (
+        <LimitPopup message={limitMsg} onClose={() => setLimitMsg("")} />
+      )}
 
       {/* pickers */}
       <Picker
@@ -873,5 +900,39 @@ export function UpiBadge() {
       <span className="text-[oklch(0.65_0.19_35)]">I</span>
       <span className="text-[oklch(0.6_0.16_145)]">›</span>
     </span>
+  );
+}
+
+function LimitPopup({
+  message,
+  onClose,
+}: {
+  message: string;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-6"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-[340px] rounded-2xl bg-white p-6 text-center shadow-card animate-rise"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-ramp-primary-soft text-[22px] font-bold text-ink">
+          !
+        </div>
+        <p className="mt-4 text-[16px] font-semibold text-ink">
+          Amount not allowed
+        </p>
+        <p className="mt-2 text-[14px] text-ink-soft">{message}</p>
+        <button
+          onClick={onClose}
+          className="mt-5 flex w-full items-center justify-center rounded-2xl bg-buy-gradient py-3.5 text-[14px] font-semibold text-brand-foreground shadow-card"
+        >
+          OK
+        </button>
+      </div>
+    </div>
   );
 }
