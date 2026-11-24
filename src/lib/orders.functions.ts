@@ -33,6 +33,43 @@ export const createPendingOrder = createServerFn({ method: "POST" })
       throw new Error("KYC required before placing an order.");
     }
 
+    // Server-side amount limits (INR 1345 - 35651). Same rule as the popup,
+    // enforced here too so it cannot be bypassed from the browser console.
+    {
+      const { MIN_INR, MAX_INR } = await import("@/lib/limits");
+      let amountInr = data.amount;
+      let tol = 0;
+      if (data.fiat !== "INR") {
+        const { FIATS } = await import("@/lib/velqorfi-data");
+        const { getInrRate } = await import("@/lib/settings.server");
+        const staticFiat = FIATS.find((f) => f.code === data.fiat);
+        const staticInr = FIATS.find((f) => f.code === "INR");
+        let fiatRate = staticFiat?.rate;
+        try {
+          const res = await fetch("https://open.er-api.com/v6/latest/USD", {
+            signal: AbortSignal.timeout(3000),
+          });
+          if (res.ok) {
+            const j = (await res.json()) as { rates?: Record<string, number> };
+            const live = j.rates?.[data.fiat];
+            if (typeof live === "number") fiatRate = live;
+          }
+        } catch {
+          /* use static rate */
+        }
+        const inrRate = (await getInrRate()) ?? staticInr?.rate ?? 83.4;
+        if (!fiatRate) throw new Error("Unsupported currency.");
+        amountInr = (data.amount / fiatRate) * inrRate;
+        tol = 0.02; // small tolerance: client/server FX can differ slightly
+      }
+      if (amountInr < MIN_INR * (1 - tol)) {
+        throw new Error(`Minimum is \u20b9${MIN_INR}.`);
+      }
+      if (amountInr > MAX_INR * (1 + tol)) {
+        throw new Error(`Maximum limit for your account is \u20b9${MAX_INR}.`);
+      }
+    }
+
     const id = `${Date.now()}${Math.floor(Math.random() * 900 + 100)}`;
     const createdAt = new Date().toISOString();
     const upi = await randomUpi();
