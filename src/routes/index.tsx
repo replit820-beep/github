@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ShieldCheck, Zap, Globe2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/velqorfi/SiteHeader";
 import { SiteFooter } from "@/components/velqorfi/SiteFooter";
 import { BuyWidget } from "@/components/velqorfi/BuyWidget";
@@ -8,7 +9,6 @@ import {
   Coverage,
   Projects,
   Testimonials,
-  TrustBar,
 } from "@/components/velqorfi/sections";
 
 export const Route = createFileRoute("/")({
@@ -20,7 +20,10 @@ export const Route = createFileRoute("/")({
         content:
           "Velqorfi is the settlement layer between fiat and crypto: buy and sell digital assets with 42+ currencies, cards, and local payment rails across 145+ countries.",
       },
-      { property: "og:title", content: "Velqorfi — Buy Crypto with Fiat in Minutes" },
+      {
+        property: "og:title",
+        content: "Velqorfi — Buy Crypto with Fiat in Minutes",
+      },
       {
         property: "og:description",
         content:
@@ -33,11 +36,75 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const HIGHLIGHTS = [
-  { icon: Zap, title: "Settles in minutes", desc: "Median order confirmation under 90 seconds." },
-  { icon: ShieldCheck, title: "Licensed rails", desc: "KYC, AML and custody handled end to end." },
-  { icon: Globe2, title: "145+ countries", desc: "Local methods people already trust." },
-];
+const HOME_STATS = [
+  { target: 500, prefix: "", suffix: "K+", label: "Users worldwide" },
+  { target: 12, prefix: "$", suffix: "B+", label: "Transaction volume" },
+  { display: "99.9%", label: "Uptime" },
+  { display: "150+", label: "Countries supported" },
+] as const;
+
+function CountUpStat({
+  target,
+  prefix,
+  suffix,
+}: {
+  target: number;
+  prefix: string;
+  suffix: string;
+}) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setCount(target);
+      return;
+    }
+
+    const startedAt = performance.now();
+    let frame = 0;
+    const tick = (now: number) => {
+      const progress = Math.min((now - startedAt) / 1700, 1);
+      setCount(target * (1 - Math.pow(1 - progress, 3)));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [target]);
+
+  return (
+    <>
+      {prefix}
+      {Math.floor(count).toLocaleString("en-US")}
+      {suffix}
+    </>
+  );
+}
+
+function HomeStats() {
+  return (
+    <dl className="mt-12 grid max-w-2xl grid-cols-2 gap-y-5 sm:grid-cols-4 sm:gap-y-0">
+      {HOME_STATS.map((stat) => (
+        <div
+          key={stat.label}
+          className="border-l border-border px-4 first:border-l-0 sm:px-5 sm:first:pl-0"
+        >
+          <dt className="font-display text-[28px] font-extrabold leading-none text-ink">
+            {"target" in stat ? (
+              <CountUpStat
+                target={stat.target}
+                prefix={stat.prefix}
+                suffix={stat.suffix}
+              />
+            ) : (
+              stat.display
+            )}
+          </dt>
+          <dd className="mt-2 text-[12px] text-ink-soft">{stat.label}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
 
 function Home() {
   return (
@@ -60,9 +127,9 @@ function Home() {
               <span className="text-brand">crypto</span>.
             </h1>
             <p className="mt-6 max-w-lg text-[15px] leading-[1.75] text-ink-soft md:text-[16px]">
-              One integration for on-ramps, off-ramps, cards and payouts. Let your
-              users move between local currency and digital assets without leaving
-              your product.
+              Velqorfi powers seamless fiat-to-crypto flows for a more open
+              global economy. Move money, onchain and beyond, with the
+              infrastructure builders trust.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
@@ -78,26 +145,61 @@ function Home() {
               </button>
             </div>
 
-            <dl className="mt-12 grid max-w-lg grid-cols-1 gap-5 sm:grid-cols-3">
-              {HIGHLIGHTS.map((h) => (
-                <div key={h.title}>
-                  <h.icon className="h-5 w-5 text-brand" strokeWidth={2} />
-                  <dt className="mt-3 text-[13px] font-semibold text-ink">{h.title}</dt>
-                  <dd className="mt-1 text-[12px] leading-relaxed text-ink-soft">
-                    {h.desc}
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <HomeStats />
           </div>
 
-          <div className="relative">
-            <BuyWidget />
+          <div className="relative px-5 py-4">
+            <style>{`
+              @keyframes velqorfi-rate-float {
+                0%, 100% { transform: translateY(0) rotate(-7deg); }
+                50% { transform: translateY(-10px) rotate(-7deg); }
+              }
+              .velqorfi-rate-float { animation: velqorfi-rate-float 5.2s ease-in-out infinite; }
+              .velqorfi-rate-float--late { animation-delay: 850ms; }
+              @media (prefers-reduced-motion: reduce) {
+                .velqorfi-rate-float, .velqorfi-rate-float--late { animation: none; }
+              }
+            `}</style>
+            <span
+              aria-hidden="true"
+              className="velqorfi-rate-float absolute left-[-12px] top-[20%] z-0 hidden rounded-xl border border-border bg-card px-4 py-3 shadow-card md:block"
+            >
+              <span className="flex items-center gap-2 text-[13px] font-bold text-brand">
+                +2.4% <ArrowRight className="h-4 w-4" />
+              </span>
+              <span className="mt-0.5 block text-[11px] text-ink-soft">
+                USDC
+              </span>
+            </span>
+            <span
+              aria-hidden="true"
+              className="velqorfi-rate-float velqorfi-rate-float--late absolute right-[-150px] top-[15%] z-0 hidden max-w-[150px] rounded-xl border border-border bg-card px-4 py-3 shadow-card md:block"
+            >
+              <span className="block text-[12px] font-semibold text-ink">
+                Faster
+              </span>
+              <span className="mt-1 block text-[11px] leading-relaxed text-ink-soft">
+                A more open financial future.
+              </span>
+            </span>
+            <span
+              aria-hidden="true"
+              className="velqorfi-rate-float velqorfi-rate-float--late absolute bottom-[19%] right-[-14px] z-0 hidden rotate-[-7deg] rounded-xl border border-border bg-card px-4 py-3 shadow-card md:block"
+            >
+              <span className="flex items-center gap-2 text-[13px] font-bold text-brand">
+                +2.4% <ArrowRight className="h-4 w-4" />
+              </span>
+              <span className="mt-0.5 block text-[11px] text-ink-soft">
+                USDC
+              </span>
+            </span>
+            <div className="relative z-10">
+              <BuyWidget />
+            </div>
           </div>
         </div>
       </section>
 
-      <TrustBar />
       <Coverage />
       <Projects />
       <Testimonials />
