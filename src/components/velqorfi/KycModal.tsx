@@ -158,7 +158,7 @@ export function KycModal({ getToken, onClose, onDone }: { getToken: () => Promis
     setBusy(true); setErr("");
     try {
       await submitKyc({ data: { idToken: await getToken(), ...f, age: Number(f.age), aadhaar, pan, selfie, consent: true } });
-      onDone();
+      setStep(4);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "KYC failed, try again");
     } finally { setBusy(false); }
@@ -169,8 +169,27 @@ export function KycModal({ getToken, onClose, onDone }: { getToken: () => Promis
       <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-background p-5 shadow-card sm:rounded-3xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-[16px] font-semibold text-foreground">KYC Verification {step > 0 && <span className="text-muted-foreground">· Step {step}/3</span>}</h2>
-          <button onClick={onClose} aria-label="Close"><X className="h-5 w-5 text-muted-foreground" /></button>
+          <button onClick={step === 4 ? onDone : onClose} aria-label="Close"><X className="h-5 w-5 text-muted-foreground" /></button>
         </div>
+
+        {step === 4 && (
+          <div className="py-6 text-center">
+            <div className="kyc-burst relative mx-auto h-24 w-24">
+              <span className="kyc-ring absolute inset-0 rounded-full bg-success/15" />
+              <svg viewBox="0 0 52 52" className="relative h-24 w-24">
+                <circle className="kyc-circle" cx="26" cy="26" r="24" fill="none" />
+                <path className="kyc-check" fill="none" d="M15 27l7 7 15-16" />
+              </svg>
+            </div>
+            <h3 className="kyc-fade mt-5 text-[20px] font-bold text-foreground">KYC verified</h3>
+            <p className="kyc-fade mt-1.5 text-[13px] text-muted-foreground" style={{ animationDelay: "0.9s" }}>
+              Your identity is confirmed. A confirmation email is on its way.
+            </p>
+            <button onClick={onDone} className="kyc-fade mt-6 w-full rounded-2xl bg-buy-gradient py-3.5 text-[14px] font-semibold text-brand-foreground" style={{ animationDelay: "1.1s" }}>
+              Continue to payment
+            </button>
+          </div>
+        )}
 
         {step === 0 && (
           <div className="text-center">
