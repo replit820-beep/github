@@ -51,5 +51,12 @@ export const submitKyc = createServerFn({ method: "POST" })
       status: "verified",
       submittedAt: new Date().toISOString(),
     });
+    try {
+      const { sendEmail, kycVerifiedEmail } = await import("@/lib/email.server");
+      const mail = kycVerifiedEmail(data.name);
+      await sendEmail(user.email, mail.subject, mail.html);
+    } catch (error) {
+      console.error("KYC email failed", error);
+    }
     return { status: "verified" };
   });
