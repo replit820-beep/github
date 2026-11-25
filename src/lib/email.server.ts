@@ -187,6 +187,24 @@ ${rows([
   };
 }
 
+/** KYC approved. */
+export function kycVerifiedEmail(name: string) {
+  return {
+    subject: `Your ${BRAND} KYC is verified`,
+    html: layout({
+      preheader: "Your identity verification is complete. You can now buy crypto without limits.",
+      title: "KYC verified",
+      body: `${para(`Hi ${name}, your identity verification is complete.`)}
+${rows([
+  ["Status", "Verified"],
+  ["Verified on", receiptTime()],
+])}
+${para("You will not be asked for KYC again on this account. You can continue placing orders right away.")}`,
+      footnote: "If you didn't submit this KYC, reply to this email immediately.",
+    }),
+  };
+}
+
 /** Login one-time passcode. */
 export function otpEmail(code: string) {
   return {
