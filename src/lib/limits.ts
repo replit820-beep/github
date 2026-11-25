@@ -4,7 +4,7 @@
  * server-side order check will use the new numbers.
  */
 export const MIN_INR = 1345;
-export const MAX_INR = 35651;
+export const MAX_INR = 75651;
 
 type RateLike = { code: string; rate: number };
 
