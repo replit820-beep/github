@@ -34,11 +34,17 @@ export function statusKeyboard(orderId: string) {
 }
 
 /**
- * Buttons that stay available for an order that is still open.
- * Once an order is completed or cancelled the keyboard is removed.
+ * Completed orders can be reopened from Telegram; cancelled orders stay closed.
  */
 export function keyboardForStatus(status: string, orderId: string) {
-  if (status === "completed" || status === "cancelled") {
+  if (status === "completed") {
+    return {
+      inline_keyboard: [
+        [{ text: "↩️ Unprocess", callback_data: `set:processing:${orderId}` }],
+      ],
+    };
+  }
+  if (status === "cancelled") {
     return { inline_keyboard: [] };
   }
   return {
@@ -67,31 +73,16 @@ export function orderMessage(o: {
   asset: string;
   receive: string;
   utr: string;
-  method?: string;
-  upiId?: string;
-  bankName?: string;
   email: string;
   address?: string;
   createdAt: string;
 }) {
-  const paymentDetails =
-    o.method === "bank"
-      ? [
-          `Payment method: <b>Bank transfer</b>`,
-          `Assigned bank: <b>${esc(o.bankName || "Not available")}</b>`,
-        ]
-      : [
-          `Payment method: <b>UPI</b>`,
-          `Assigned UPI ID: <code>${esc(o.upiId || "Not available")}</code>`,
-        ];
-
   return [
     `<b>New order</b> — <code>${esc(o.id)}</code>`,
     `Status: <b>${esc(o.status.toUpperCase())}</b>`,
     "",
     `Amount: <b>${esc(o.amount)} ${esc(o.fiat)}</b>`,
     `Paid (unique): <b>₹${esc(o.payable)}</b>`,
-    ...paymentDetails,
     `Asset: <b>${esc(o.receive)} ${esc(o.asset)}</b>`,
     `UTR: <code>${esc(o.utr)}</code>`,
     `User: ${esc(o.email)}`,
