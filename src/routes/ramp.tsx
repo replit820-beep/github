@@ -910,27 +910,34 @@ function LimitPopup({
   message: string;
   onClose: () => void;
 }) {
+  const isMax = /max|above|exceed|up to/i.test(message);
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-6"
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-ink/40 px-4 pb-4 backdrop-blur-[2px] sm:items-center sm:pb-0"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[340px] rounded-2xl bg-white p-6 text-center shadow-card animate-rise"
+        className="relative w-full max-w-[360px] rounded-3xl border border-ramp-line bg-white p-6 text-center shadow-card animate-rise"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-ramp-primary-soft text-[22px] font-bold text-ink">
-          !
+        <button onClick={onClose} aria-label="Close" className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-surface-soft">
+          <X className="h-4 w-4 text-ink-soft" />
+        </button>
+        <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${isMax ? "bg-danger/10 text-danger" : "bg-brand/10 text-brand"}`}>
+          <span className="text-[26px] font-bold leading-none">{isMax ? "↑" : "↓"}</span>
         </div>
-        <p className="mt-4 text-[16px] font-semibold text-ink">
-          Amount not allowed
+        <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
+          {isMax ? "Maximum order" : "Minimum order"}
         </p>
-        <p className="mt-2 text-[14px] text-ink-soft">{message}</p>
+        <p className="mt-1 text-[18px] font-bold text-ink">
+          {isMax ? "Amount is too high" : "Amount is too low"}
+        </p>
+        <p className="mt-2 text-[14px] leading-relaxed text-ink-soft">{message}</p>
         <button
           onClick={onClose}
-          className="mt-5 flex w-full items-center justify-center rounded-2xl bg-buy-gradient py-3.5 text-[14px] font-semibold text-brand-foreground shadow-card"
+          className="mt-6 flex w-full items-center justify-center rounded-2xl bg-buy-gradient py-3.5 text-[14px] font-semibold text-brand-foreground shadow-card"
         >
-          OK
+          Change amount
         </button>
       </div>
     </div>
