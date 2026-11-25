@@ -374,10 +374,28 @@
 
 
 /* Lock the page: no pinch-zoom or two-finger panning/bounce. */
-html,
-body {
-  touch-action: pan-y;
-  overscroll-behavior: none;
-  overflow-x: hidden;
+/* Only clip sideways overflow; vertical scroll must stay free on every page (payment page included). */
+html {
   -webkit-text-size-adjust: 100%;
+}
+body {
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+}
+
+/* KYC success animation */
+.kyc-circle { stroke: var(--color-success); stroke-width: 2.5; stroke-dasharray: 151; stroke-dashoffset: 151; animation: kyc-draw .6s ease-out forwards; }
+.kyc-check { stroke: var(--color-success); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; animation: kyc-draw .35s .55s ease-out forwards; }
+.kyc-ring { animation: kyc-pulse 1.4s .8s ease-out both; }
+.kyc-burst { animation: kyc-pop .5s cubic-bezier(.2,1.4,.4,1) both; }
+.kyc-fade { opacity: 0; animation: kyc-up .45s .75s ease-out forwards; }
+@keyframes kyc-draw { to { stroke-dashoffset: 0; } }
+@keyframes kyc-pulse { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(1.6); opacity: 0; } }
+@keyframes kyc-pop { 0% { transform: scale(.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes kyc-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@utility text-gradient-brand {
+  background: linear-gradient(100deg, var(--brand-blue), var(--brand) 45%, var(--brand-violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
