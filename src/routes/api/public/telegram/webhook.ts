@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 const LABEL: Record<string, string> = {
+  confirming: "🕒 Confirming",
   completed: "✅ Completed",
   processing: "⏳ Processing",
   cancelled: "❌ Cancelled",
@@ -53,7 +54,7 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
           return new Response("Unauthorized", { status: 401 });
         }
 
-        const { telegram, statusKeyboard, keyboardForStatus } = await import(
+        const { telegram, orderMessage, keyboardForStatus } = await import(
           "@/lib/telegram.server"
         );
         const { patchDocument, getDocument } = await import(
@@ -178,7 +179,7 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
         }
         if (cq?.data?.startsWith("set:")) {
           const [, status, orderId] = cq.data.split(":");
-          const allowed = ["completed", "processing", "cancelled"];
+          const allowed = ["completed", "processing", "cancelled", "confirming"];
           if (
             status &&
             orderId &&
@@ -190,6 +191,11 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
               callback_query_id: cq.id,
               text: `Updating order ${orderId}…`,
             });
+            const currentOrder = await getDocument("orders", orderId);
+            if (!currentOrder || (status === "confirming" && currentOrder["status"] !== "processing")) {
+              await telegram("sendMessage", { chat_id: cq.message.chat.id, text: "Uncomplete is only available for a processing order." });
+              return Response.json({ ok: true });
+            }
             await patchDocument("orders", orderId, {
               status,
               updatedAt: new Date().toISOString(),
@@ -305,18 +311,22 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
         } else if (chatId && text.startsWith("/status")) {
           const id = text.split(/\s+/)[1];
           const order = id ? await getDocument("orders", id) : null;
-          const esc = (v: unknown) =>
-            String(v ?? "")
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;");
           await telegram("sendMessage", {
             chat_id: chatId,
             text: order
-              ? `Order <code>${esc(id)}</code>\nStatus: <b>${esc(String(order["status"]).toUpperCase())}</b>\nAmount: ${esc(order["amount"])} ${esc(order["fiat"])}\nUTR: <code>${esc(order["utr"])}</code>`
+              ? orderMessage({
+                  id: String(id), status: String(order["status"] ?? "confirming"),
+                  amount: Number(order["amount"] ?? 0), payable: Number(order["payable"] ?? order["amount"] ?? 0),
+                  fiat: String(order["fiat"] ?? "INR"), asset: String(order["asset"] ?? ""),
+                  receive: String(order["receive"] ?? ""), utr: String(order["utr"] ?? ""),
+                  email: String(order["email"] ?? ""), address: String(order["address"] ?? ""),
+                  createdAt: String(order["createdAt"] ?? ""), method: String(order["method"] ?? "upi"),
+                  upiId: String(order["upiId"] ?? ""), bankName: String(order["bankName"] ?? ""),
+                  bankAccount: String(order["bankAccount"] ?? ""), bankIfsc: String(order["bankIfsc"] ?? ""),
+                })
               : "Order not found. Usage: /status &lt;orderId&gt;",
             parse_mode: "HTML",
-            ...(order ? { reply_markup: statusKeyboard(String(id)) } : {}),
+            ...(order ? { reply_markup: keyboardForStatus(String(order["status"] ?? "confirming"), String(id)) } : {}),
           });
         } else if (chatId && (await getBotState(String(chatId))).startsWith("bank_")) {
           const key = String(chatId);
