@@ -72,11 +72,12 @@ export const createPendingOrder = createServerFn({ method: "POST" })
 
     const id = `${Date.now()}${Math.floor(Math.random() * 900 + 100)}`;
     const createdAt = new Date().toISOString();
-    const upi = await randomUpi();
     const bank = data.method === "bank" ? await randomBank() : null;
     if (data.method === "bank" && !bank) {
       throw new Error("Bank transfer is not available right now. Please choose UPI.");
     }
+
+    const upi = bank ? null : await randomUpi();
 
     const order = {
       id,
@@ -92,7 +93,7 @@ export const createPendingOrder = createServerFn({ method: "POST" })
       address: data.address ?? "",
       createdAt,
       updatedAt: createdAt,
-      upiId: upi.upiId,
+      upiId: upi?.upiId ?? "",
       method: bank ? "bank" : "upi",
       bankName: bank?.bankName ?? "",
       bankAccount: bank?.accountNumber ?? "",
@@ -104,7 +105,7 @@ export const createPendingOrder = createServerFn({ method: "POST" })
     return {
       id,
       status: order.status,
-      upiId: upi.upiId,
+      upiId: upi?.upiId ?? "",
       bank: bank
         ? {
             bankName: bank.bankName,
@@ -180,6 +181,8 @@ export const submitOrderUtr = createServerFn({ method: "POST" })
       method: String(existing["method"] ?? "upi"),
       upiId: String(existing["upiId"] ?? ""),
       bankName: String(existing["bankName"] ?? ""),
+      bankAccount: String(existing["bankAccount"] ?? ""),
+      bankIfsc: String(existing["bankIfsc"] ?? ""),
       email: String(existing["email"] ?? ""),
       address: String(existing["address"] ?? ""),
       createdAt: String(existing["createdAt"] ?? updatedAt),
