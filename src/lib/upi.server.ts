@@ -6,7 +6,6 @@ import {
   setDocument,
 } from "./firestore.server";
 
-const DEFAULT_UPI = "wtfvinayak@fam";
 const UPI_PATTERN = /^[a-zA-Z0-9._-]{2,256}@[a-zA-Z][a-zA-Z0-9.-]{1,63}$/;
 
 export type UpiAccount = { id: string; upiId: string };
@@ -21,14 +20,10 @@ export function validUpiId(value: string) {
 
 export async function listUpis(): Promise<UpiAccount[]> {
   const docs = await listDocuments("payment_upis");
-  const accounts = docs
+  return docs
+    .filter((doc) => doc["active"] !== false && doc["active"] !== "false")
     .map((doc) => ({ id: String(doc["id"] ?? ""), upiId: String(doc["upiId"] ?? "") }))
     .filter((account) => account.id && validUpiId(account.upiId));
-  if (accounts.length) return accounts;
-
-  const fallback = process.env["DEFAULT_UPI_ID"]?.trim() || DEFAULT_UPI;
-  const account = await addUpi(fallback);
-  return [account];
 }
 
 export async function addUpi(value: string): Promise<UpiAccount> {
@@ -44,15 +39,22 @@ export async function addUpi(value: string): Promise<UpiAccount> {
 }
 
 export async function removeUpi(id: string) {
-  const accounts = await listUpis();
-  if (accounts.length <= 1) throw new Error("At least one UPI ID must remain");
-  await deleteDocument("payment_upis", id);
+  const account = await getDocument("payment_upis", id);
+  if (!account) return;
+  // Keep a tombstone: reads must never recreate or reselect a removed ID.
+  await setDocument("payment_upis", id, {
+    upiId: String(account["upiId"] ?? ""),
+    active: false,
+    updatedAt: new Date().toISOString(),
+  });
 }
 
 export async function randomUpi(): Promise<UpiAccount> {
   const accounts = await listUpis();
   const index = Math.floor(Math.random() * accounts.length);
-  return accounts[index] ?? accounts[0] ?? addUpi(DEFAULT_UPI);
+  const account = accounts[index];
+  if (!account) throw new Error("UPI payments are unavailable right now. Please try bank transfer or contact support.");
+  return account;
 }
 
 export type BotAwaiting =
