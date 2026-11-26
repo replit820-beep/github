@@ -8,3 +8,7 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## Payment account lifecycle
+- Keep removed UPI accounts as inactive records and never seed accounts during reads; this prevents deleted payment destinations from reappearing.
+- Preserve the assigned payment destination on existing orders and include it in Telegram notifications; this keeps historical payment logs accurate.
