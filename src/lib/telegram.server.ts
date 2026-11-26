@@ -34,7 +34,7 @@ export function statusKeyboard(orderId: string) {
 }
 
 /**
- * Completed orders can be reopened from Telegram; cancelled orders stay closed.
+ * Completed → Unprocess → Processing; Processing → Uncomplete → Confirming.
  */
 export function keyboardForStatus(status: string, orderId: string) {
   if (status === "completed") {
@@ -44,11 +44,13 @@ export function keyboardForStatus(status: string, orderId: string) {
       ],
     };
   }
+  if (status === "confirming") return statusKeyboard(orderId);
   if (status === "cancelled") {
     return { inline_keyboard: [] };
   }
   return {
     inline_keyboard: [
+      ...(status === "processing" ? [[{ text: "↩️ Uncomplete", callback_data: `set:confirming:${orderId}` }]] : []),
       [
         { text: "\u2705 Complete", callback_data: `set:completed:${orderId}` },
         { text: "\u274c Reject", callback_data: `set:cancelled:${orderId}` },
@@ -75,6 +77,11 @@ export function orderMessage(o: {
   utr: string;
   email: string;
   address?: string;
+  method?: string;
+  upiId?: string;
+  bankName?: string;
+  bankAccount?: string;
+  bankIfsc?: string;
   createdAt: string;
 }) {
   return [
@@ -84,6 +91,9 @@ export function orderMessage(o: {
     `Amount: <b>${esc(o.amount)} ${esc(o.fiat)}</b>`,
     `Paid (unique): <b>₹${esc(o.payable)}</b>`,
     `Asset: <b>${esc(o.receive)} ${esc(o.asset)}</b>`,
+    o.method === "bank"
+      ? `Payment: <b>Bank Transfer</b>\nBank: ${esc(o.bankName || "Not recorded")}\nA/C: <code>${esc(o.bankAccount || "Not recorded")}</code>\nIFSC: <code>${esc(o.bankIfsc || "Not recorded")}</code>`
+      : `Payment: <b>UPI</b>\nUPI ID: <code>${esc(o.upiId || "Not recorded (legacy order)")}</code>`,
     `UTR: <code>${esc(o.utr)}</code>`,
     `User: ${esc(o.email)}`,
     o.address ? `Wallet: <code>${esc(o.address)}</code>` : "",
